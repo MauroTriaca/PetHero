@@ -130,5 +130,25 @@
 
                 return $this;
         }
+
+        /**
+         * Get the value of booking
+         */ 
+        public function getBooking()
+        {
+                return $this->booking;
+        }
+
+        /**
+         * Set the value of booking
+         *
+         * @return  self
+         */ 
+        public function setBooking($booking)
+        {
+                $this->booking = $booking;
+
+                return $this;
+        }
     }
 ?>
