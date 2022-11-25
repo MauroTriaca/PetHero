@@ -19,6 +19,11 @@ use DateTime;
             require_once(VIEWS_PATH. "chats.php");
         }
 
+        public function ShowChatPersonalView($receptor){
+            require_once(VIEWS_PATH. "validate-session.php");
+            $chatList = $this->chatDAO->GetConversation($_SESSION["loggedUser"]->getId(), $receptor);
+            require_once(VIEWS_PATH."chat-personal.php");
+        }
         public function ActiveChat($reciever_user_id, $message){
             require_once(VIEWS_PATH. "validate-session.php");
             $chat = new Chat();
@@ -32,12 +37,11 @@ use DateTime;
             $date = new DateTime();
             $stringDate = $date->format('Y-m-d H:i:s');
             $timestamp=strtotime($stringDate);
-            $ultima = date(('Y-m-d H:i:s'), $timestamp);
+            $dateStamp = date(('Y-m-d H:i:s'), $timestamp);
            
 
-            $chat->setCreated_on($ultima);
+            $chat->setCreated_on($dateStamp);
             $chat->setStatus(1);
-            var_dump($chat);
 
             $this->chatDAO->Add($chat);
         }
@@ -50,10 +54,18 @@ use DateTime;
             $chat->setReciever_user_id($reciever_user_id);
             $chat->setMessage($message);
 
+            date_default_timezone_set("America/Argentina/Buenos_Aires");
+
+            $date = new DateTime();
+            $stringDate = $date->format('Y-m-d H:i:s');
+            $timestamp=strtotime($stringDate);
+            $dateStamp = date(('Y-m-d H:i:s'), $timestamp);
+           
+
+            $chat->setCreated_on($dateStamp);
             $chat->setStatus(1);
 
-            $this->chatDAO->Add($chat);
-            require_once(VIEWS_PATH."chat-mensajes.php");
+            require_once(VIEWS_PATH."chat-personal.php");
         }
 
 

@@ -7,7 +7,7 @@
     use Models\Chat;
 
     class ChatDAO{
-        //private $chatList = array();
+        private $chatList = array();
         private $connection;
         private $tableName = "chat";
 
@@ -18,19 +18,21 @@
 
         public function GetUserChats($userId){
 
-            $query = "SELECT DISTINCT reciever_user_id FROM $this->tableName
+            $query = "SELECT *  FROM $this->tableName
             WHERE messenger_user_id = {$userId};";
-           
-            return $this->GetResult($query);
+
+            $this->GetAllQuerys($query);
+            return $this->chatList;
         }
     
         public function GetConversation($userId, $receptorId){
-            $query = "SELECT message, created_on  FROM $this->tableName 
+            $query = "SELECT *  FROM $this->tableName 
             WHERE messenger_user_id = {$userId} and receiver_user_id = {$receptorId}
             OR
             WHERE messenger_user_id = {$receptorId} and receiver_user_id = {$userId};";
 
-            return $this->GetResult($query);
+            $this->GetAllUltimateQuerys($query);
+            return $this->chatList;
         }
 
         private function GetResult($query)
@@ -62,6 +64,56 @@
             return $chat;
         }
 
+        private function GetAllUltimateQuerys($query){
+            $this->chatList = array();
+            $this->connection = Connection::GetInstance();
+            $parameters = $this->connection->Execute($query);
+            foreach ($parameters as $valuesArray) {
+            $chat = new Chat();
+            $chat->setId($parameters[0]["id"]);
+
+            $chat->setCreated_on($parameters[0]["created_on"]);
+            $chat->setMessage($parameters[0]["message"]);
+            $chat->setStatus($parameters[0]["status"]);
+
+            // Set User messenger
+            $userDAO = new UserDAO();
+            $user = $userDAO->GetById($parameters[0]["messenger_user_id"]);
+            $chat->setMessenger_user_id($user);
+
+            // Set User Reciever
+            $reciever = $userDAO->GetById($parameters[0]["reciever_user_id"]);
+            $chat->setReciever_user_id($reciever);
+
+            array_push($this->chatList, $chat);
+         }
+        }
+
+        private function GetAllQuerys($query){
+            $this->chatList = array();
+            $this->connection = Connection::GetInstance();
+            $parameters = $this->connection->Execute($query);
+            foreach ($parameters as $valuesArray) {
+            $chat = new Chat();
+            $chat->setId($valuesArray["id"]);
+
+            $chat->setCreated_on($valuesArray["created_on"]);
+            $chat->setMessage($valuesArray["message"]);
+            $chat->setStatus($valuesArray["status"]);
+
+            // Set User messenger
+            $userDAO = new UserDAO();
+            $user = $userDAO->GetById($valuesArray["messenger_user_id"]);
+            $chat->setMessenger_user_id($user);
+
+            // Set User Reciever
+            $reciever = $userDAO->GetById($valuesArray["reciever_user_id"]);
+            $chat->setReciever_user_id($reciever);
+
+            array_push($this->chatList, $chat);
+         }
+        }
+
         private function Insert(Chat $chat)
         {
         $query = "INSERT INTO  $this->tableName (messenger_user_id, reciever_user_id, message, created_on, status) 
@@ -77,7 +129,8 @@
                 $parameters["message"] = $chat->getMessage();
                 $parameters["created_on"] = $chat->getCreated_on();
                 $parameters["status"] = $chat->getStatus();
-    
+
+               
                 $this->connection = Connection::GetInstance();
                 $this->connection->ExecuteNonQuery($query, $parameters);
             } catch (Exception $ex) {

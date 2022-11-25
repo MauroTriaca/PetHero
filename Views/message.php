@@ -1,5 +1,6 @@
 <?php
-if (isset($message)) {
+if(isset($message)){
+if ($message != "") {
 ?>
 <div class = "container">
     <div class='form-group text-center'>
@@ -18,5 +19,6 @@ if (isset($message)) {
     <?php
         }
     }
+} 
 ?>
 </div>
